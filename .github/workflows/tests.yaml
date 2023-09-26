@@ -9,7 +9,7 @@ on:
         modules/*/**
   pull_request:
       branches:
-        - feature/*
+        - main
       paths:
         modules/*/**
 
