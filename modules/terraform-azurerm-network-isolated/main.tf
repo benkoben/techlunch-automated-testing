@@ -61,3 +61,5 @@ resource "azurerm_public_ip_prefix" "main" {
   tags = var.tags
 }
 
+
+
