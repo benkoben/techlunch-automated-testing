@@ -36,3 +36,5 @@ terraform.rc
 doodles
 
 *lock.hcl
+
+.DS_Store
