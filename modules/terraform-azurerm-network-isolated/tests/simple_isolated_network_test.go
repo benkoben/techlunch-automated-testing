@@ -11,6 +11,21 @@ import (
 	"github.com/hashicorp/terraform-exec/tfexec"
 )
 
+func mockSimpleIsolatedNetworkEun(t *testing.T) *terraform.Options {
+	return &terraform.Options{
+		TerraformDir: "../.",
+		Reconfigure:  true,
+		Upgrade:      true,
+		Vars: map[string]interface{}{
+			"location":                      "northeurope",
+			"resource_group_name":           "rg-test-network-isolated-simple-eun",
+			"virtual_network_name":          "vnet-test-network-isolated-simple-eun",
+			"virtual_network_address_space": []string{"10.0.0.0/24"},
+			"nat_gateway_name":              "ngw-test-network-isolated-simple-eun",
+			"public_ip_name":                "pip-test-network-isolated-simple-eun",
+		},
+	}
+}
 func mockSimpleIsolatedNetwork(t *testing.T) *terraform.Options {
 	return &terraform.Options{
 		TerraformDir: "../.",
@@ -63,7 +78,22 @@ func TestUT_NetworkIsolated(t *testing.T) {
 		options struct {
 			planOut string
 		}
-	}{
+	}{		{
+			name:  "simple-isolated-network-eun",
+			input: mockSimpleIsolatedNetworkEun(t),
+			// The order of the elements is important
+			// Tip: Run a test to see the order of the resources
+			want: []string{
+				"azurerm_nat_gateway.main",
+				"azurerm_nat_gateway_public_ip_association.main",
+				"azurerm_public_ip.main",
+				"azurerm_resource_group.main",
+				"azurerm_virtual_network.main",
+			},
+			options: struct{ planOut string }{
+				planOut: "simple-isolated-network-eun.tfplan",
+			},
+		},
 		{
 			name:  "simple-isolated-network",
 			input: mockSimpleIsolatedNetwork(t),
