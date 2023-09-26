@@ -19,6 +19,16 @@ unit_tests_timeout='15m'
 integration_tests_prefix='TestIT_'
 integration_tests_timeout='30m'
 
+# When a test fails the script needs to take care of cleaning up terraform resources
+# This is primarily useful when running this script locally. 
+handle_error(){
+  echo "Test failed"
+  echo "cleaning up before exiting"
+  cleanup
+  
+  exit 1
+}
+
 usage() {
   echo 'Usage: ./test.sh -m MODE <full|unit|integration>'
   exit 1
@@ -46,8 +56,7 @@ unit() {
   add_features
   format
   printf "\nRunning%btests....\n" "${blue} unit ${nc}"
-  "${go_executable}" test "${script_dir}" -run "${unit_tests_prefix}" -v -timeout "${unit_tests_timeout}" || :
-  cleanup
+  trap 'handle_error' "${go_executable}" test "${script_dir}" -run "${unit_tests_prefix}" -v -timeout "${unit_tests_timeout}"
 }
 
 integration() {
@@ -55,8 +64,7 @@ integration() {
   add_features
   format
   printf "\nRunning%btests....\n" "${blue} integration ${nc}"
-  "${go_executable}" test "${script_dir}" -run "${integration_tests_prefix}" -v -timeout "${integration_tests_timeout}" || :
-  cleanup
+  trap 'handle_error' "${go_executable}" test "${script_dir}" -run "${integration_tests_prefix}" -v -timeout "${integration_tests_timeout}"
 }
 
 format() {
