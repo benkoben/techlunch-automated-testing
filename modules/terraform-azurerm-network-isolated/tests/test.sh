@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-set -o errexit
 set -o nounset
 set -o pipefail
 
@@ -56,7 +55,7 @@ unit() {
   add_features
   format
   printf "\nRunning%btests....\n" "${blue} unit ${nc}"
-  trap 'handle_error' "${go_executable}" test "${script_dir}" -run "${unit_tests_prefix}" -v -timeout "${unit_tests_timeout}"
+  "${go_executable}" test -count=1 "${script_dir}" -run "${unit_tests_prefix}" -v -timeout "${unit_tests_timeout}"
 }
 
 integration() {
@@ -64,7 +63,7 @@ integration() {
   add_features
   format
   printf "\nRunning%btests....\n" "${blue} integration ${nc}"
-  trap 'handle_error' "${go_executable}" test "${script_dir}" -run "${integration_tests_prefix}" -v -timeout "${integration_tests_timeout}"
+  "${go_executable}" test -count=1 "${script_dir}" -run "${integration_tests_prefix}" -v -timeout "${integration_tests_timeout}"
 }
 
 format() {
@@ -122,6 +121,8 @@ if [[ -z ${go_executable} ]]; then
   printf "unable to locate go binary, make sure go is installed. Exiting...\n"
   exit 1
 fi
+
+trap "handle_error" ERR
 
 while getopts ":m:" o; do
   case "${o}" in
