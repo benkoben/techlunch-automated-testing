@@ -68,7 +68,7 @@ jobs:
   # unit tests for terraform.
   dry-run:
     if: github.event_name == 'push'
-    name: Run unittests for ${{ matrix.module.module_name }}
+    name: Run dry-runs / unit test(s) for ${{ matrix.module.module_name }}
     needs: get-changed-modules
     runs-on: ubuntu-latest
     # need to run in an environment so that fedaration credentials subject matches all push events
@@ -108,7 +108,7 @@ jobs:
     
   integration:
     if: github.event_name == 'pull_request'
-    name: Run unittests for ${{ matrix.module.module_name }}
+    name: Run integration test(s) for ${{ matrix.module.module_name }}
     needs: get-changed-modules
     runs-on: ubuntu-latest
     strategy:
@@ -139,7 +139,7 @@ jobs:
         if: ${{ env.DEBUG_ENABLED }}
         run: echo "${{ matrix.module.module_name }} - ${{ matrix.module.has_test }}"
 
-      - name: Run dry-runs/units
+      - name: Run tests
         if: ${{ matrix.module.has_test }}
         run: pushd ${{ env.MODULE_PATH }}/tests/ && bash test.sh -m integration
 
