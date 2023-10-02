@@ -53,7 +53,7 @@ func mockIsolatedNetworkWithIpPrefixes(t *testing.T) *terraform.Options {
 	}
 }
 
-func TestUT_NetworkIsolated(t *testing.T) {
+func TestDry_NetworkIsolated(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -101,10 +101,18 @@ func TestUT_NetworkIsolated(t *testing.T) {
 	}
 
 	for _, test := range tests {
+
+		provider, err := NewProvider(test.input.TerraformDir + "/provider.tf")
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer provider.Delete()
+		provider.Create()
+
 		// Runs each test in the tests table as a subset of the unit test.
 		// Each test is run as an individual goroutine.
 		t.Run(test.name, func(t *testing.T) {
-			tf, err := tfexec.NewTerraform(test.input.TerraformDir, locateTerraformExec())
+			tf, err := tfexec.NewTerraform(test.input.TerraformDir, LocateTerraformExec())
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -138,7 +146,7 @@ func TestUT_NetworkIsolated(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			got := parseResourceAddresses(planJson)
+			got := ParseResourceAddresses(planJson)
 
 			if diff := cmp.Diff(test.want, got); diff != "" {
 				t.Fatalf("%s = Unexpected result, (-want, +got)\n%s\n", test.name, diff)
@@ -147,7 +155,7 @@ func TestUT_NetworkIsolated(t *testing.T) {
 	}
 }
 
-func TestIT_NetworkIsolated(t *testing.T) {
+func TestUT_NetworkIsolated(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
