@@ -101,6 +101,14 @@ func TestDry_NetworkIsolated(t *testing.T) {
 	}
 
 	for _, test := range tests {
+
+		provider, err := NewProvider(test.input.TerraformDir + "/provider.tf")
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer provider.Delete()
+		provider.Create(
+
 		// Runs each test in the tests table as a subset of the unit test.
 		// Each test is run as an individual goroutine.
 		t.Run(test.name, func(t *testing.T) {
