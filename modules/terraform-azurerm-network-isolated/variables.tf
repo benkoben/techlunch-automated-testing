@@ -43,3 +43,6 @@ variable "public_ip_prefixes" {
   default     = []
   description = "(Optional) List of objects of desired public IP prefixes that should be created."
 }
+
+
+

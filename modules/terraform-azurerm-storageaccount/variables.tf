@@ -24,3 +24,6 @@ variable "account_tier" {
   type = string
   default = "Standard"
 }
+
+
+
