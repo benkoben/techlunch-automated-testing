@@ -53,7 +53,7 @@ func mockIsolatedNetworkWithIpPrefixes(t *testing.T) *terraform.Options {
 	}
 }
 
-func TestUT_NetworkIsolated(t *testing.T) {
+func TestDry_NetworkIsolated(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -147,7 +147,7 @@ func TestUT_NetworkIsolated(t *testing.T) {
 	}
 }
 
-func TestIT_NetworkIsolated(t *testing.T) {
+func TestUT_NetworkIsolated(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
