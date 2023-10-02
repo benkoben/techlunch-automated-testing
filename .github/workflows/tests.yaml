@@ -53,7 +53,7 @@
                 # Push
                 git fetch origin ${{ github.event.before }} --depth=1
                 # Only select the mofidied directories that isn't "terraform- but an actual modules
-                export CHANGED_MODULES=$( git diff --name-only ${{ github.event.before }} ${{ github.event.after }} -- modules | grep -E 'modules/.*/' |  cut -d/ -f2 | uniq)
+                export CHANGED_MODULES=$(git diff --name-only | grep -E 'modules/.*/' | cut -d/ -f2 | uniq)
                 echo "Diff between ${{ github.event.before }} and ${{ github.event.after }}"
               fi
               # Get all the modules that have the directory "test"
