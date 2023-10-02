@@ -112,7 +112,7 @@ func TestDry_NetworkIsolated(t *testing.T) {
 		// Runs each test in the tests table as a subset of the unit test.
 		// Each test is run as an individual goroutine.
 		t.Run(test.name, func(t *testing.T) {
-			tf, err := tfexec.NewTerraform(test.input.TerraformDir, locateTerraformExec())
+			tf, err := tfexec.NewTerraform(test.input.TerraformDir, LocateTerraformExec())
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -146,7 +146,7 @@ func TestDry_NetworkIsolated(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			got := parseResourceAddresses(planJson)
+			got := ParseResourceAddresses(planJson)
 
 			if diff := cmp.Diff(test.want, got); diff != "" {
 				t.Fatalf("%s = Unexpected result, (-want, +got)\n%s\n", test.name, diff)
