@@ -37,7 +37,7 @@ func publicSharedServices(t *testing.T) *terraform.Options {
 	}
 }
 
-func TestUT_PublicSharedServices(t *testing.T) {
+func TestDry_PublicSharedServices(t *testing.T) {
 	// Lets Unit tests run in parallel
 	t.Parallel()
 
@@ -100,79 +100,15 @@ func TestUT_PublicSharedServices(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			// Read plan file as json
-			// planJson, err := tf.ShowPlanFile(context.Background(), test.options.planOut)
-			// if err != nil {
-			// 	t.Fatal(err)
-			// }
-			// got := ParseResourceAddresses(planJson)
+			planJson, err := tf.ShowPlanFile(context.Background(), test.options.planOut)
+			if err != nil {
+				t.Fatal(err)
+			}
+			got := ParseResourceAddresses(planJson)
 
-			// if diff := cmp.Diff(test.want, got); diff != "" {
-			// 	t.Fatalf("%s = Unexpected result, (-want, +got)\n%s\n", test.name, diff)
-			// }
+			if diff := cmp.Diff(test.want, got); diff != "" {
+				t.Fatalf("%s = Unexpected result, (-want, +got)\n%s\n", test.name, diff)
+			}
 		})
 	}
 }
-
-// func TestIT_AksCluster(t *testing.T) {
-// 	t.Parallel()
-
-// 	tests := []struct {
-// 		name  string
-// 		input []*terraform.Options
-// 	}{
-// 		{
-// 			name:  "basic-public-cluster",
-// 			input: []*terraform.Options{network(t), publicAksCluster(t)},
-// 		},
-// 	}
-
-// 	for _, test := range tests {
-
-// 		t.Run(test.name, func(t *testing.T) {
-
-// 			// Create provider.tf files in each module involved in this test
-// 			networkProvider, err := NewProvider(test.input[0].TerraformDir + "/provider.tf")
-// 			if err != nil {
-// 				t.Fatal(err)
-// 			}
-// 			defer networkProvider.Delete()
-// 			networkProvider.Create()
-
-// 			aksProvider, err := NewProvider(test.input[1].TerraformDir + "/provider.tf")
-// 			if err != nil {
-// 				t.Fatal(err)
-// 			}
-// 			defer aksProvider.Delete()
-// 			aksProvider.Create()
-
-// 			var networkModuleOutput string
-// 			var aksModuleInput map[string]interface{}
-
-// 			// Deploy network resources
-// 			defer terraform.Destroy(t, test.input[0])
-// 			terraform.InitAndApply(t, test.input[0])
-
-// 			// Fetch output from network module
-// 			networkModuleOutput = terraform.OutputJson(t, test.input[0], "")
-// 			err = json.Unmarshal([]byte(networkModuleOutput), &aksModuleInput)
-// 			if err != nil {
-// 				t.Fatal("error - could not unmarshal output from dependencies deployment")
-// 			}
-
-// 			// Parse network module output
-// 			vnetId := aksModuleInput["vnet_id"].(map[string]interface{})["value"].(string)
-// 			natGwId := aksModuleInput["nat_gateway_id"].(map[string]interface{})["value"].(string)
-
-// 			// Replace mock values with the values parsed from the network module
-// 			test.input[1].Vars["virtual_network_id"] = vnetId
-// 			test.input[1].Vars["user_managed_nat_gateway_resource_id"] = natGwId
-
-// 			// Deploy AKS to network
-// 			defer terraform.Destroy(t, test.input[1])
-// 			terraform.Init(t, test.input[1])
-// 			terraform.ApplyAndIdempotent(t, test.input[1])
-
-// 		})
-// 	}
-// }

@@ -85,7 +85,7 @@ func publicAksCluster(t *testing.T) *terraform.Options {
 	}
 }
 
-func TestUT_AksCluster(t *testing.T) {
+func TestDry_AksCluster(t *testing.T) {
 	// Lets Unit tests run in parallel
 	t.Parallel()
 
