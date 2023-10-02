@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-set -o errexit
 set -o nounset
 set -o pipefail
 
@@ -13,11 +12,24 @@ target_module_dir=$(realpath "${script_dir}/..")
 go_executable=$(which go)
 
 # Edit the following variables to change the behaviour of the tests
+dry_tests_prefix='TestDry_'
+dry_tests_timeout='15m'
+
 unit_tests_prefix='TestUT_'
 unit_tests_timeout='15m'
 
 integration_tests_prefix='TestIT_'
 integration_tests_timeout='30m'
+
+# When a test fails the script needs to take care of cleaning up terraform resources
+# This is primarily useful when running this script locally. 
+handle_error(){
+  echo "Test failed"
+  echo "cleaning up before exiting"
+  cleanup
+  
+  exit 1
+}
 
 usage() {
   echo 'Usage: ./test.sh -m MODE <full|unit|integration>'
@@ -29,22 +41,30 @@ full() {
   integration
 }
 
+dry() {
+  # This build step performs a Unit test. Which implied an init and plan.
+  # The plan file is compared to the expected output of all tests. If no diffs are detected
+  # the test succeeds.
+  format
+  printf "\nRunning%btests....\n" "${blue} dry-run ${nc}"
+  "${go_executable}" test -count=1 "${script_dir}" -run "${dry_tests_prefix}" -v -timeout "${dry_tests_timeout}"
+}
+
+
 unit() {
   # This build step performs a Unit test. Which implied an init and plan.
   # The plan file is compared to the expected output of all tests. If no diffs are detected
   # the test succeeds.
   format
-  printf "\nRunning %s unit %s tests....\n" "$blue" "$nc"
-  "${go_executable}" test "${script_dir}" -run "${unit_tests_prefix}" -v -timeout "${unit_tests_timeout}" || :
-  cleanup
+  printf "\nRunning%btests....\n" "${blue} unit ${nc}"
+  "${go_executable}" test -count=1 "${script_dir}" -run "${unit_tests_prefix}" -v -timeout "${unit_tests_timeout}"
 }
 
 integration() {
   # Build setp that performs an integration test. This implies that a terraform apply will be exected.
   format
-  printf "\nRunning %sintegration%s tests...\n" "$blue" "$nc"
-  "${go_executable}" test "${script_dir}" -run "${integration_tests_prefix}" -v -timeout "${integration_tests_timeout}" || :
-  cleanup
+  printf "\nRunning%btests....\n" "${blue} integration ${nc}"
+  "${go_executable}" test -count=1 "${script_dir}" -run "${integration_tests_prefix}" -v -timeout "${integration_tests_timeout}"
 }
 
 format() {
@@ -103,6 +123,8 @@ if [[ -z ${go_executable} ]]; then
   exit 1
 fi
 
+trap "handle_error" ERR
+
 while getopts ":m:" o; do
   case "${o}" in
   m)
@@ -116,6 +138,9 @@ while getopts ":m:" o; do
       ;;
     'integration')
       integration
+      ;;
+    'dry')
+      dry
       ;;
     *)
       usage

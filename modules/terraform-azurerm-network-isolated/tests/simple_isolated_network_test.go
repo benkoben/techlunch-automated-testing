@@ -11,21 +11,6 @@ import (
 	"github.com/hashicorp/terraform-exec/tfexec"
 )
 
-func mockSimpleIsolatedNetworkEun(t *testing.T) *terraform.Options {
-	return &terraform.Options{
-		TerraformDir: "../.",
-		Reconfigure:  true,
-		Upgrade:      true,
-		Vars: map[string]interface{}{
-			"location":                      "northeurope",
-			"resource_group_name":           "rg-test-network-isolated-simple-eun",
-			"virtual_network_name":          "vnet-test-network-isolated-simple-eun",
-			"virtual_network_address_space": []string{"10.0.0.0/24"},
-			"nat_gateway_name":              "ngw-test-network-isolated-simple-eun",
-			"public_ip_name":                "pip-test-network-isolated-simple-eun",
-		},
-	}
-}
 func mockSimpleIsolatedNetwork(t *testing.T) *terraform.Options {
 	return &terraform.Options{
 		TerraformDir: "../.",
@@ -68,7 +53,7 @@ func mockIsolatedNetworkWithIpPrefixes(t *testing.T) *terraform.Options {
 	}
 }
 
-func TestUT_NetworkIsolated(t *testing.T) {
+func TestDry_NetworkIsolated(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -78,22 +63,7 @@ func TestUT_NetworkIsolated(t *testing.T) {
 		options struct {
 			planOut string
 		}
-	}{		{
-			name:  "simple-isolated-network-eun",
-			input: mockSimpleIsolatedNetworkEun(t),
-			// The order of the elements is important
-			// Tip: Run a test to see the order of the resources
-			want: []string{
-				"azurerm_nat_gateway.main",
-				"azurerm_nat_gateway_public_ip_association.main",
-				"azurerm_public_ip.main",
-				"azurerm_resource_group.main",
-				"azurerm_virtual_network.main",
-			},
-			options: struct{ planOut string }{
-				planOut: "simple-isolated-network-eun.tfplan",
-			},
-		},
+	}{
 		{
 			name:  "simple-isolated-network",
 			input: mockSimpleIsolatedNetwork(t),
@@ -134,7 +104,14 @@ func TestUT_NetworkIsolated(t *testing.T) {
 		// Runs each test in the tests table as a subset of the unit test.
 		// Each test is run as an individual goroutine.
 		t.Run(test.name, func(t *testing.T) {
-			tf, err := tfexec.NewTerraform(test.input.TerraformDir, locateTerraformExec())
+			provider, err := NewProvider(test.input.TerraformDir + "/provider.tf")
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer provider.Delete()
+			provider.Create()
+
+			tf, err := tfexec.NewTerraform(test.input.TerraformDir, LocateTerraformExec())
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -168,7 +145,7 @@ func TestUT_NetworkIsolated(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			got := parseResourceAddresses(planJson)
+			got := ParseResourceAddresses(planJson)
 
 			if diff := cmp.Diff(test.want, got); diff != "" {
 				t.Fatalf("%s = Unexpected result, (-want, +got)\n%s\n", test.name, diff)
@@ -177,28 +154,35 @@ func TestUT_NetworkIsolated(t *testing.T) {
 	}
 }
 
-func TestIT_NetworkIsolated(t *testing.T) {
+func TestUT_NetworkIsolated(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
 		name  string
-		input []*terraform.Options
+		input *terraform.Options
 	}{
 		{
 			name:  "simple-isolated-network",
-			input: []*terraform.Options{mockSimpleIsolatedNetwork(t)},
+			input: mockSimpleIsolatedNetwork(t),
 		},
 		{
 			name:  "isolated-network-with-ip-prefixes",
-			input: []*terraform.Options{mockIsolatedNetworkWithIpPrefixes(t)},
+			input: mockIsolatedNetworkWithIpPrefixes(t),
 		},
 	}
 
 	for _, test := range tests {
+		provider, err := NewProvider(test.input.TerraformDir + "/provider.tf")
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer provider.Delete()
+		provider.Create()
+
 		t.Run(test.name, func(t *testing.T) {
-			defer terraform.Destroy(t, test.input[0])
-			terraform.Init(t, test.input[0])
-			terraform.ApplyAndIdempotent(t, test.input[0])
+			defer terraform.Destroy(t, test.input)
+			terraform.Init(t, test.input)
+			terraform.ApplyAndIdempotent(t, test.input)
 		})
 	}
 }

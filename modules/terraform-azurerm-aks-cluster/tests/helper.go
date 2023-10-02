@@ -43,7 +43,7 @@ func (p Provider) Delete() {
 
 func NewProvider(path string) (Provider, error) {
 
-	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
 		return Provider{}, fmt.Errorf("could not open provided path: %s", err)
 	}
