@@ -54,7 +54,14 @@ func TestDry_PublicSharedServices(t *testing.T) {
 		{
 			name:  "public-shared-services",
 			input: publicSharedServices(t),
-			want:  []string{},
+			// client-id guids are a challenge for these types of tests.
+			want: []string{
+				"azurerm_container_registry.shared[0]",
+				"azurerm_key_vault.shared[0]",
+				"azurerm_resource_group.shared",
+				"azurerm_role_assignment.acrpull[\"6df2e2bd-8e9a-4098-aacb-def8bcf78ac0\"]",
+				"azurerm_role_assignment.acrpush[\"6df2e2bd-8e9a-4098-aacb-def8bcf78ac0\"]",
+			},
 			options: struct{ planOut string }{
 				planOut: "public-shared-services.tfplan",
 			},
