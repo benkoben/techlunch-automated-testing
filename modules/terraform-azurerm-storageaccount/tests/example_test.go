@@ -22,7 +22,7 @@ func mockModuleInput(t *testing.T) *terraform.Options {
 		Vars: map[string]interface{}{
 			"location":             "northeurope",
 			"resource_group_name":  "rg-test",
-			"storage_account_name": "athensdemo20231003",
+			"storage_account_name": "athensdemo20231004",
 		},
 	}
 }
