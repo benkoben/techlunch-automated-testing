@@ -57,6 +57,12 @@ func NewProvider(path string) (Provider, error) {
 }
 
 func LocateTerraformExec() string {
+	// TODO: can perhaps be replaced with
+	// 	"github.com/hashicorp/go-version"
+	// "github.com/hashicorp/hc-install/product"
+	// "github.com/hashicorp/hc-install/releases"
+	// See example here: https://github.com/hashicorp/terraform-exec/
+
 	tfPath, err := exec.LookPath("terraform")
 	if err != nil {
 		fmt.Printf("lookup terraform binary: %s\n", err)
@@ -65,6 +71,7 @@ func LocateTerraformExec() string {
 	return tfPath
 }
 
+// ParseResourceAddresses parses a terraform plan in JSON format and returns a list of resource addresses
 func ParseResourceAddresses(plan *tfjson.Plan) []string {
 	var addreses []string
 	for _, resource := range plan.ResourceChanges {
