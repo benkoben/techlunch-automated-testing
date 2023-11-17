@@ -36,3 +36,7 @@ terraform.rc
 doodles
 
 *lock.hcl
+
+.tfplan
+modules/terraform-azurerm-storageaccount/tests/example_test.go
+modules/terraform-azurerm-storageaccount/mockModule.tfplan

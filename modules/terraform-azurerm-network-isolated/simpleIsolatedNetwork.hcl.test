@@ -1,0 +1,8 @@
+
+run "isolated-network" {
+  command = "plan"
+  variables = {
+    location            = "westeurope"
+    resource_group_name = "rg-test-network-isolated-simple-euw"
+  }
+}

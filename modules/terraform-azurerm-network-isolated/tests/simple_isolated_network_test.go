@@ -9,6 +9,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/hashicorp/terraform-exec/tfexec"
+	"github.com/zclconf/go-cty/cty"
 )
 
 func mockSimpleIsolatedNetwork(t *testing.T) *terraform.Options {
@@ -51,6 +52,51 @@ func mockIsolatedNetworkWithIpPrefixes(t *testing.T) *terraform.Options {
 			},
 		},
 	}
+}
+
+func mockSimpleIsolatedNetworkNew() (*ModuleTest, error) {
+	testCase, err := NewModuleTest("simpleIsolatedNetwork", &TestOptions{
+		TerraTestInitUpgrade:     true,
+		TerraTestInitReconfigure: true,
+		TerraformTestName:        "isolated-network",
+		TerraformTestCommand:     "plan",
+		// TerraformTestPlanOptions: PlanOptions{
+		// 	Mode:    "normal",
+		// 	Refresh: true,
+		// },
+		// TerraformTestAssert: Assertion{
+		// 	Condition:    "azurerm_virtual_network.module.name == \"vnet-test-network-isolated-simple-euw\"",
+		// 	ErrorMessage: "virtual network name did not match specified condition.",
+		// },
+		TestVariables: map[string]cty.Value{
+			"location":            cty.StringVal("westeurope"),
+			"resource_group_name": cty.StringVal("rg-test-network-isolated-simple-euw"),
+			// "virtual_network_name":          "vnet-test-network-isolated-simple-euw",
+			// "virtual_network_address_space": []string{"10.0.0.0/24"},
+			// "nat_gateway_name":              "ngw-test-network-isolated-simple-euw",
+			// "public_ip_name":                "pip-test-network-isolated-simple-euw",
+		},
+		// TestModule: Module{
+		// 	Source: "./..",
+		// },
+	})
+	if err != nil {
+		return &ModuleTest{}, err
+	}
+	return testCase, nil
+}
+
+func TestHCL_Render(t *testing.T) {
+
+	t.Run("renderHCL", func(t *testing.T) {
+		fmt.Println("rendering")
+		testCase, err := mockSimpleIsolatedNetworkNew()
+		if err != nil {
+			t.Fatal(err)
+		}
+		// defer testCase.Delete()
+		testCase.Create()
+	})
 }
 
 func TestDry_NetworkIsolated(t *testing.T) {

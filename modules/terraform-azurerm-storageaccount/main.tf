@@ -1,5 +1,5 @@
 resource "azurerm_resource_group" "module" {
-  name     = "rg-storage-${var.name}"
+  name     = var.resource_group_name
   location = var.location
 }
 
@@ -12,5 +12,3 @@ resource "azurerm_storage_account" "module" {
 
   tags = var.tags
 }
-
-
